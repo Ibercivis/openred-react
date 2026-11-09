@@ -204,6 +204,7 @@ export interface Track {
   std_dose_rate?: number; // Desviación estándar de tasa de dosis en µSv/h
   status?: string; // completed, processing, error, etc.
   error_message?: string;
+  spectra_count?: number; // espectros gamma (RadiaCode) del track
   is_public?: boolean;
   gpx_file?: string;
   geojson_data?: any;

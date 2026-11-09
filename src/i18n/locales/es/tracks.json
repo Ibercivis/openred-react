@@ -105,5 +105,13 @@
     "one": "Descargar track",
     "download": "Descargar",
     "downloading": "Preparando descarga..."
+  },
+  "spectra": {
+    "filter": "CON ESPECTRO",
+    "badge": "ESPECTRO · {{count}}",
+    "badgeTitle_one": "{{count}} espectro gamma",
+    "badgeTitle_other": "{{count}} espectros gamma",
+    "onMap_one": "{{count}} espectro (clic para verlo)",
+    "onMap_other": "{{count}} espectros (clic para verlos)"
   }
 }

@@ -36,7 +36,8 @@ import {
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
 } from '@mui/icons-material';
-import { Track, MapPoint, Mission, Campaign, Device } from '../types';
+import { Track, MapPoint, Mission, Campaign, Device, RadiationSpectrumMarker } from '../types';
+import SpectrumDialog from '../components/SpectrumDialog';
 import { useMeasurementDetail } from '../hooks/useMeasurementDetail';
 import { useAuth } from '../context/AuthContext';
 import { useProjectContext } from '../context/ProjectContext';
@@ -50,6 +51,7 @@ import { useLocale } from '../utils/i18nFormat';
 
 // --- Helpers de presentación de tracks ---
 const DANGER = '#e0524a';
+const SPECTRUM_COLOR = '#0751A4'; // azul de marca, igual que los marcadores de espectro del mapa
 
 const statusColor = (status?: string): string | null => {
   if (!status || status === 'completed') return null;
@@ -143,6 +145,10 @@ const TracksPage: React.FC = () => {
   // Track selection and map state
   const [selectedTrack, setSelectedTrack] = useState<Track | null>(null);
   const [trackMeasurements, setTrackMeasurements] = useState<MapPoint[]>([]);
+  // Espectros del track seleccionado (solo proyectos de radiación)
+  const [trackSpectra, setTrackSpectra] = useState<RadiationSpectrumMarker[]>([]);
+  const [selectedSpectrumId, setSelectedSpectrumId] = useState<number | null>(null);
+  const [onlyWithSpectra, setOnlyWithSpectra] = useState(false);
   const [loadingMap, setLoadingMap] = useState(false);
   const [hoveredPoint, setHoveredPoint] = useState<any>(null);
   // Los puntos del track solo traen coordenadas, dosis y velocidad; el resto, al hacer hover
@@ -685,10 +691,11 @@ const TracksPage: React.FC = () => {
     const q = search.trim().toLowerCase();
     const list = tracks.filter(
       (t) =>
+        (!onlyWithSpectra || (t.spectra_count ?? 0) > 0) && (
         !q ||
         t.name?.toLowerCase().includes(q) ||
         t.mission_name?.toLowerCase().includes(q) ||
-        t.campaign_name?.toLowerCase().includes(q)
+        t.campaign_name?.toLowerCase().includes(q))
     );
     const time = (t: Track) => new Date(t.start_time || t.created_at || 0).getTime();
     const dist = (t: Track) => t.total_distance ?? t.distance ?? 0;
@@ -701,7 +708,25 @@ const TracksPage: React.FC = () => {
         default: return time(b) - time(a);
       }
     });
-  }, [tracks, search, sortBy]);
+  }, [tracks, search, sortBy, onlyWithSpectra]);
+
+  const isRadiation = selectedProject?.project_type === 'radiation';
+  const anyTrackWithSpectra = useMemo(() => tracks.some((t) => (t.spectra_count ?? 0) > 0), [tracks]);
+
+  // Cargar los espectros del track seleccionado (GET /api/radiation-spectra/map/?track=<id>).
+  // Si el backend ya dice que no tiene (spectra_count === 0) no se hace la petición.
+  const selectedTrackId = selectedTrack?.id;
+  const selectedTrackSpectraCount = selectedTrack?.spectra_count;
+  useEffect(() => {
+    setTrackSpectra([]);
+    if (!selectedTrackId || !isRadiation || selectedTrackSpectraCount === 0) return;
+    let cancelled = false;
+    apiService
+      .getRadiationSpectraMap({ track: selectedTrackId })
+      .then((data) => { if (!cancelled) setTrackSpectra(data); })
+      .catch((err) => console.error('Error loading track spectra:', err));
+    return () => { cancelled = true; };
+  }, [selectedTrackId, selectedTrackSpectraCount, isRadiation]);
 
   const totalKm = useMemo(
     () => tracks.reduce((s, t) => s + (t.total_distance ?? t.distance ?? 0), 0) / 1000,
@@ -789,7 +814,30 @@ const TracksPage: React.FC = () => {
       getWidth: 1,
       widthMinPixels: 0.5,
     }),
-  ].filter(Boolean), [trackMeasurements]);
+    // Espectros del track: mismo estilo que en el mapa principal; clic abre el espectro
+    trackSpectra.length > 0 && new ScatterplotLayer({
+      id: 'track-spectra',
+      data: trackSpectra,
+      pickable: true,
+      stroked: true,
+      filled: true,
+      billboard: true,
+      radiusUnits: 'pixels',
+      getRadius: 8,
+      radiusMinPixels: 7,
+      radiusMaxPixels: 10,
+      lineWidthUnits: 'pixels',
+      getLineWidth: 2,
+      getPosition: (d: RadiationSpectrumMarker) => [Number(d.longitude), Number(d.latitude)],
+      getFillColor: [7, 81, 164, 230],
+      getLineColor: [255, 255, 255, 255],
+      parameters: { depthTest: false },
+      onClick: (info: any) => {
+        if (info.object) setSelectedSpectrumId(info.object.id);
+        return true;
+      },
+    }),
+  ].filter(Boolean), [trackMeasurements, trackSpectra]);
 
   if (loading) {
     return (
@@ -912,9 +960,28 @@ const TracksPage: React.FC = () => {
             </Select>
           </FormControl>
         </Box>
-        <Typography sx={{ fontFamily: MONO, fontSize: 10, color: T.textDim, mb: 1, textAlign: 'right' }}>
-          {t('summary', { count: tracks.length, km: totalKm.toFixed(1) })}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1 }}>
+          {isRadiation && anyTrackWithSpectra ? (
+            <Box
+              component="button"
+              type="button"
+              onClick={() => setOnlyWithSpectra((v) => !v)}
+              aria-pressed={onlyWithSpectra}
+              sx={{
+                fontFamily: MONO, fontSize: 10, letterSpacing: '0.5px', cursor: 'pointer',
+                px: 0.75, py: 0.25, borderRadius: 0.5,
+                border: `1px solid ${onlyWithSpectra ? SPECTRUM_COLOR : T.border}`,
+                backgroundColor: onlyWithSpectra ? SPECTRUM_COLOR : 'transparent',
+                color: onlyWithSpectra ? '#fff' : T.textMid,
+              }}
+            >
+              {t('spectra.filter')}
+            </Box>
+          ) : <span />}
+          <Typography sx={{ fontFamily: MONO, fontSize: 10, color: T.textDim, textAlign: 'right' }}>
+            {t('summary', { count: tracks.length, km: totalKm.toFixed(1) })}
+          </Typography>
+        </Box>
 
         {/* Tracks List - filas densas */}
         {tracks.length === 0 ? (
@@ -985,11 +1052,27 @@ const TracksPage: React.FC = () => {
                     </Box>
                   </Box>
 
-                  {/* Línea 2: misión · campaña */}
-                  {meta && (
-                    <Typography noWrap sx={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.5px', color: T.textMid, mt: 0.25 }}>
-                      {meta}
-                    </Typography>
+                  {/* Línea 2: misión · campaña (+ etiqueta de espectros) */}
+                  {(meta || (isRadiation && (track.spectra_count ?? 0) > 0)) && (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75, mt: 0.25, minWidth: 0 }}>
+                      {isRadiation && (track.spectra_count ?? 0) > 0 && (
+                        <Box
+                          component="span"
+                          title={t('spectra.badgeTitle', { count: track.spectra_count })}
+                          sx={{
+                            flexShrink: 0, fontFamily: MONO, fontSize: 9, letterSpacing: '0.5px',
+                            px: 0.5, borderRadius: 0.5, color: '#fff', backgroundColor: SPECTRUM_COLOR,
+                          }}
+                        >
+                          {t('spectra.badge', { count: track.spectra_count })}
+                        </Box>
+                      )}
+                      {meta && (
+                        <Typography noWrap sx={{ fontFamily: MONO, fontSize: 10, letterSpacing: '0.5px', color: T.textMid }}>
+                          {meta}
+                        </Typography>
+                      )}
+                    </Box>
                   )}
 
                   {/* Línea 3: fechas colapsadas */}
@@ -1125,6 +1208,11 @@ const TracksPage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 {t('map.pointsLoaded', { count: trackMeasurements.length })}
               </Typography>
+              {trackSpectra.length > 0 && (
+                <Typography variant="body2" sx={{ color: T.textMid, mt: 0.5 }}>
+                  {t('spectra.onMap', { count: trackSpectra.length })}
+                </Typography>
+              )}
               <Button
                 size="small"
                 variant="outlined"
@@ -1516,6 +1604,13 @@ const TracksPage: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      {/* Espectro seleccionado en el mapa del track */}
+      <SpectrumDialog
+        spectrumId={selectedSpectrumId}
+        open={selectedSpectrumId !== null}
+        onClose={() => setSelectedSpectrumId(null)}
+      />
     </Box>
   );
 };

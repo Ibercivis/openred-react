@@ -105,5 +105,13 @@
     "one": "Download track",
     "download": "Download",
     "downloading": "Preparing download..."
+  },
+  "spectra": {
+    "filter": "WITH SPECTRUM",
+    "badge": "SPECTRUM · {{count}}",
+    "badgeTitle_one": "{{count}} gamma spectrum",
+    "badgeTitle_other": "{{count}} gamma spectra",
+    "onMap_one": "{{count}} spectrum (click to view)",
+    "onMap_other": "{{count}} spectra (click to view)"
   }
 }
