@@ -88,11 +88,22 @@
     "rateLimitedNoRetry": "Has superado el límite de 30 subidas por hora. Inténtalo más tarde.",
     "processingFailed": "El procesado del track ha fallado: {{message}}",
     "processingFailedNoMessage": "El procesado del track ha fallado",
-    "processingTimeout": "El track se ha subido pero sigue procesándose. Recarga la lista en unos segundos."
+    "processingTimeout": "El track se ha subido pero sigue procesándose. Recarga la lista en unos segundos.",
+    "exportUnauthorized": "Tu sesión ha caducado. Vuelve a iniciar sesión para descargar tracks.",
+    "exportNotFound": "No se ha encontrado el track o no es tuyo",
+    "exportEmpty": "No tienes tracks para exportar",
+    "exportTimeout": "La descarga ha tardado demasiado. Inténtalo de nuevo.",
+    "exportFailed": "Error al descargar los tracks"
   },
   "upload": {
     "uploading": "Subiendo fichero...",
     "processing": "Fichero recibido. Procesando en el servidor (suele tardar unos segundos)...",
     "success": "Track \"{{name}}\" procesado: {{points}} puntos"
+  },
+  "export": {
+    "all": "Descargar todos mis tracks",
+    "one": "Descargar track",
+    "download": "Descargar",
+    "downloading": "Preparando descarga..."
   }
 }

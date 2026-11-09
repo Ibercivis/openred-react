@@ -30,6 +30,7 @@ import {
   Route as RouteIcon,
   Add as AddIcon,
   Delete as DeleteIcon,
+  Download as DownloadIcon,
   Edit as EditIcon,
   Search as SearchIcon,
   ChevronLeft as ChevronLeftIcon,
@@ -128,6 +129,8 @@ const TracksPage: React.FC = () => {
   
   // Estado para diálogo de confirmación de eliminación
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  // Exportacion en curso: id del track, 'all' para todos, o null
+  const [exporting, setExporting] = useState<number | 'all' | null>(null);
   const [trackToDelete, setTrackToDelete] = useState<Track | null>(null);
   
   // Estado para controlar si el panel lateral está colapsado
@@ -615,6 +618,32 @@ const TracksPage: React.FC = () => {
     }
   };
 
+  const handleExport = async (trackId?: number) => {
+    if (exporting !== null) return;
+    setExporting(trackId ?? 'all');
+    setError(null);
+    try {
+      const { blob, filename } = await apiService.exportTracks(trackId != null ? { id: trackId } : {});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err: any) {
+      console.error('Error exporting tracks:', err);
+      const status = err?.response?.status;
+      if (status === 401) setError(t('errors.exportUnauthorized'));
+      else if (status === 404) setError(trackId != null ? t('errors.exportNotFound') : t('errors.exportEmpty'));
+      else if (err?.code === 'ECONNABORTED') setError(t('errors.exportTimeout'));
+      else setError(t('errors.exportFailed'));
+    } finally {
+      setExporting(null);
+    }
+  };
+
   const handleOpenDeleteDialog = (track: Track) => {
     setTrackToDelete(track);
     setDeleteDialogOpen(true);
@@ -835,6 +864,17 @@ const TracksPage: React.FC = () => {
           {t('dialog.newButton')}
         </Button>
 
+        <Button
+          variant="outlined"
+          startIcon={exporting === 'all' ? <CircularProgress size={16} /> : <DownloadIcon />}
+          onClick={() => handleExport()}
+          disabled={exporting !== null || tracks.length === 0}
+          fullWidth
+          sx={{ mb: 2, textTransform: 'none' }}
+        >
+          {exporting === 'all' ? t('export.downloading') : t('export.all')}
+        </Button>
+
         {/* Error Alert */}
         {error && (
           <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
@@ -915,7 +955,19 @@ const TracksPage: React.FC = () => {
                         {track.name}
                       </Typography>
                     </Box>
-                    <Box className="row-actions" sx={{ display: 'flex', gap: 0.25, opacity: 0, transition: 'opacity 120ms ease', flexShrink: 0 }}>
+                    <Box className="row-actions" sx={{ display: 'flex', gap: 0.25, opacity: exporting === track.id ? 1 : 0, transition: 'opacity 120ms ease', flexShrink: 0 }}>
+                      <IconButton
+                        size="small"
+                        title={t('export.one')}
+                        aria-label={t('export.one')}
+                        disabled={exporting !== null}
+                        onClick={(e) => { e.stopPropagation(); handleExport(track.id); }}
+                        sx={{ color: T.textDim, '&:hover': { color: T.text } }}
+                      >
+                        {exporting === track.id
+                          ? <CircularProgress size={13} />
+                          : <DownloadIcon sx={{ fontSize: 15 }} />}
+                      </IconButton>
                       <IconButton
                         size="small"
                         onClick={(e) => { e.stopPropagation(); handleOpenDialog(track); }}
@@ -1073,6 +1125,16 @@ const TracksPage: React.FC = () => {
               <Typography variant="body2" color="text.secondary">
                 {t('map.pointsLoaded', { count: trackMeasurements.length })}
               </Typography>
+              <Button
+                size="small"
+                variant="outlined"
+                startIcon={exporting === selectedTrack.id ? <CircularProgress size={14} /> : <DownloadIcon />}
+                onClick={() => handleExport(selectedTrack.id)}
+                disabled={exporting !== null}
+                sx={{ mt: 1.5, textTransform: 'none' }}
+              >
+                {exporting === selectedTrack.id ? t('export.downloading') : t('export.download')}
+              </Button>
             </Paper>
 
             {/* Leyenda de colores */}

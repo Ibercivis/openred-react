@@ -477,6 +477,30 @@ class ApiService {
     await this.api.delete(`/api/tracks/${id}/`);
   }
 
+  // Exporta tracks del usuario como ZIP (CSV de tracks, medidas, espectros + ficheros originales).
+  // - id: un solo track -> GET /api/tracks/{id}/export/
+  // - ids: varios -> GET /api/tracks/export/?ids=1,2,3
+  // - sin argumentos: todos -> GET /api/tracks/export/
+  // Errores: 401 sin sesion, 404 track ajeno o nada que exportar, 400 ids mal formado.
+  async exportTracks(options: { id?: number; ids?: number[] } = {}): Promise<{ blob: Blob; filename: string }> {
+    const url = options.id != null ? `/api/tracks/${options.id}/export/` : '/api/tracks/export/';
+    const params = options.id == null && options.ids?.length ? { ids: options.ids.join(',') } : undefined;
+    const response: AxiosResponse<Blob> = await this.api.get(url, {
+      params,
+      responseType: 'blob',
+      timeout: 60000,
+    });
+
+    const disposition: string | undefined = response.headers['content-disposition'];
+    const match = disposition?.match(/filename\*?=(?:UTF-8'')?"?([^";]+)"?/i);
+    const fallback = options.id != null
+      ? `openred_track_${options.id}.zip`
+      : `openred_tracks_${new Date().toISOString().slice(0, 10)}.zip`;
+    const filename = match ? decodeURIComponent(match[1]) : fallback;
+
+    return { blob: response.data, filename };
+  }
+
   // Measurement methods
   
   // Getter para acceder a los servicios de medidas de forma específica

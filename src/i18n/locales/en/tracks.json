@@ -88,11 +88,22 @@
     "rateLimitedNoRetry": "You have exceeded the limit of 30 uploads per hour. Try again later.",
     "processingFailed": "Track processing failed: {{message}}",
     "processingFailedNoMessage": "Track processing failed",
-    "processingTimeout": "The track was uploaded but is still being processed. Reload the list in a few seconds."
+    "processingTimeout": "The track was uploaded but is still being processed. Reload the list in a few seconds.",
+    "exportUnauthorized": "Your session has expired. Log in again to download tracks.",
+    "exportNotFound": "Track not found or not yours",
+    "exportEmpty": "You have no tracks to export",
+    "exportTimeout": "The download took too long. Please try again.",
+    "exportFailed": "Error downloading tracks"
   },
   "upload": {
     "uploading": "Uploading file...",
     "processing": "File received. Processing on the server (usually takes a few seconds)...",
     "success": "Track \"{{name}}\" processed: {{points}} points"
+  },
+  "export": {
+    "all": "Download all my tracks",
+    "one": "Download track",
+    "download": "Download",
+    "downloading": "Preparing download..."
   }
 }
