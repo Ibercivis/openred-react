@@ -375,7 +375,7 @@ export class MeasurementServiceFactory {
 
 **1. Clonar repositorio:**
 ```bash
-git clone https://github.com/frasanz/openred-react.git
+git clone https://github.com/Ibercivis/openred-react.git
 cd openred-react
 ```
 
@@ -963,7 +963,7 @@ if (process.env.REACT_APP_DEBUG === 'true') {
 - Material-UI: https://mui.com/
 
 **Comunidad:**
-- GitHub Issues: https://github.com/frasanz/openred-react/issues
+- GitHub Issues: https://github.com/Ibercivis/openred-react/issues
 - Stack Overflow: tag `openred`
 
 ---
@@ -1013,7 +1013,7 @@ if (process.env.REACT_APP_DEBUG === 'true') {
 ```bash
 git clone https://github.com/tu-usuario/openred-react.git
 cd openred-react
-git remote add upstream https://github.com/frasanz/openred-react.git
+git remote add upstream https://github.com/Ibercivis/openred-react.git
 ```
 
 **2. Crear rama feature:**
@@ -1074,7 +1074,7 @@ Este proyecto está desarrollado para el Proyecto OpenRed.
 **Contacto:**
 - Web: https://open-red.es
 - Email: info@open-red.es
-- GitHub: https://github.com/frasanz/openred-react
+- GitHub: https://github.com/Ibercivis/openred-react
 
 ---
 

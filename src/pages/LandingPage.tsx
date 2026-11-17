@@ -57,7 +57,7 @@ const LandingPage: React.FC = () => {
 
       {/* Footer */}
       <Box sx={{ mt: 6, pt: 4, borderTop: `1px solid ${T.border}`, display: 'flex', gap: 2.5, flexWrap: 'wrap', justifyContent: 'center' }}>
-        <MuiLink href="https://github.com/frasanz/openred-react" target="_blank" rel="noopener" sx={footerLinkSx}>
+        <MuiLink href="https://github.com/Ibercivis/openred-react" target="_blank" rel="noopener" sx={footerLinkSx}>
           GitHub
         </MuiLink>
         <MuiLink component={RouterLink} to="/mobile-app" sx={footerLinkSx}>
