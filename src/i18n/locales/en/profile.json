@@ -18,6 +18,7 @@
     "updateError": "Failed to update profile"
   },
   "account": {
+    "ibercivisAccountLabel": "Ibercivis account",
     "sectionTitle": "Account",
     "logoutLabel": "Sign out",
     "logoutButton": "Sign out"

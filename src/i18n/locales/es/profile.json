@@ -18,6 +18,7 @@
     "updateError": "Error al actualizar el perfil"
   },
   "account": {
+    "ibercivisAccountLabel": "Cuenta Ibercivis",
     "sectionTitle": "Cuenta",
     "logoutLabel": "Cerrar sesión",
     "logoutButton": "Cerrar sesión"
