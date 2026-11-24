@@ -25,10 +25,7 @@ const LandingPage: React.FC = () => {
 
       {/* CTA */}
       <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', alignItems: 'center', mt: 3 }}>
-        <Button component={RouterLink} to="/register" variant="contained" sx={{ fontWeight: 600 }}>
-          {t('cta.register')}
-        </Button>
-        <Button component={RouterLink} to="/login" variant="outlined">
+        <Button component={RouterLink} to="/login" variant="contained" sx={{ fontWeight: 600 }}>
           {t('cta.login')}
         </Button>
         <Button component={RouterLink} to="/" variant="text" sx={{ fontFamily: MONO, fontSize: 12, color: T.textMid }}>

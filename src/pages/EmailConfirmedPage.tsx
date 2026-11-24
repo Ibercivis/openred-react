@@ -225,7 +225,7 @@ const EmailConfirmedPage: React.FC = () => {
             <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', flexWrap: 'wrap' }}>
               <Button
                 component={Link}
-                to="/register"
+                to="/login"
                 variant="contained"
                 size="large"
                 sx={{ 
@@ -233,7 +233,7 @@ const EmailConfirmedPage: React.FC = () => {
                   px: 3
                 }}
               >
-                {t('confirmed.registerAgain')}
+                {t('confirmed.signInInstead')}
               </Button>
 
               <Button

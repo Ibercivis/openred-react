@@ -4,7 +4,6 @@
   "meta": "An open environmental monitoring network",
   "intro": "OpenRed is a collaborative platform that allows citizens and scientists to record, visualize, and analyze environmental measurements in real time, including gamma radiation and light pollution. It is a project of the Ibercivis Foundation.",
   "cta": {
-    "register": "Create account",
     "login": "Sign in",
     "viewMap": "View map"
   },

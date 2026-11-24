@@ -7,12 +7,13 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { LoginCredentials } from '../types';
 import { useGoogleLogin } from '@react-oauth/google';
-import { Box, Link as MuiLink } from '@mui/material';
+import { Box, Link as MuiLink, Typography } from '@mui/material';
 import GoogleIcon from '@mui/icons-material/Google';
 import { AuthShell } from '../components/ui/AuthShell';
 import { Form, FieldRow, FieldLabel, FieldError, AuthInput, PrimaryButton, GhostButton, AuthDivider } from '../components/ui/Form';
 import { Banner } from '../components/ui/Banner';
 import { darkTokens as T } from '../theme/tokens';
+import { ibercivisAccountEnabled, startIbercivisAccountSignIn } from '../services/ibercivisAccount';
 
 const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,6 +21,20 @@ const LoginPage: React.FC = () => {
   const { login, loginWithGoogle, loading, error, clearError } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [ibercivisLoading, setIbercivisLoading] = useState(false);
+
+  const ibercivisSignIn = async () => {
+    try {
+      setIbercivisLoading(true);
+      setSubmitError(null);
+      clearError();
+      // Leaves the page for the service, so nothing after this runs on success.
+      await startIbercivisAccountSignIn();
+    } catch {
+      setSubmitError(t('auth:ibercivis.failed'));
+      setIbercivisLoading(false);
+    }
+  };
 
   const schema = React.useMemo(
     () =>
@@ -123,13 +138,24 @@ const LoginPage: React.FC = () => {
       kicker={t('auth:login.kicker')}
       title={t('auth:login.title')}
       subtitle={t('auth:login.subtitle')}
-      footer={<>{t('auth:login.noAccountFooter')} <Link to="/register">{t('auth:login.signUpHere')}</Link></>}
     >
       {(error || submitError) && (
         <Box sx={{ mb: 2 }}>
           <Banner variant="danger" title={t('auth:login.errorTitle')}>
             {error || submitError}
           </Banner>
+        </Box>
+      )}
+
+      {ibercivisAccountEnabled && (
+        <Box sx={{ mb: 3 }}>
+          <PrimaryButton loading={ibercivisLoading} onClick={ibercivisSignIn} type="button">
+            {t('auth:ibercivis.signIn')}
+          </PrimaryButton>
+          <Typography sx={{ mt: 1.25, fontSize: 12, lineHeight: 1.5, color: T.textMid }}>
+            {t('auth:ibercivis.separateAccount')}
+          </Typography>
+          <AuthDivider>{t('auth:login.orSignInWithPassword')}</AuthDivider>
         </Box>
       )}
 

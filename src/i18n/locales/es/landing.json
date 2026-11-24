@@ -4,7 +4,6 @@
   "meta": "Una red abierta de medición ambiental",
   "intro": "OpenRed es una plataforma colaborativa que permite a ciudadanos y científicos registrar, visualizar y analizar mediciones ambientales en tiempo real, incluyendo radiación gamma y contaminación lumínica. Es un proyecto de la Fundación Ibercivis.",
   "cta": {
-    "register": "Crear cuenta",
     "login": "Iniciar sesión",
     "viewMap": "Ver mapa →"
   },
