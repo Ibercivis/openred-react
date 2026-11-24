@@ -1,5 +1,6 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { API_BASE_URL } from '../config/api';
+import { IbercivisAccountCode } from './ibercivisAccount';
 import {
   User,
   DeviceModel,
@@ -18,7 +19,6 @@ import {
   MapPoint,
   AuthTokens,
   LoginCredentials,
-  RegisterData,
   ApiResponse,
   DeviceFormData,
   RadiationSpectrumMarker
@@ -190,24 +190,21 @@ class ApiService {
     }
   }
 
-  async register(userData: RegisterData): Promise<AuthTokens> {
-    try {
-      console.log('Datos enviados en registro:', userData); // Debug log
-      const response: AxiosResponse<AuthTokens> = await this.api.post('/dj-rest-auth/registration/', userData);
-      
-      // Con email verification = mandatory, puede que no se devuelvan tokens inmediatamente
-      // Solo guardar tokens si están presentes en la respuesta
-      if (response.data && (response.data.key || response.data.access)) {
-        this.setTokens(response.data);
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Error en registro:', error.response?.data); // Debug log
-      // No limpiar tokens en caso de error de registro
-      throw error;
-    }
+  /**
+   * Posts what `src/services/ibercivisAccount.ts` brought back from the
+   * service. The answer is the same token shape a password sign-in gives, so
+   * everything after this point is identical.
+   */
+  async loginWithIbercivis(code: IbercivisAccountCode): Promise<AuthTokens> {
+    this.clearTokens();
+    const response: AxiosResponse<AuthTokens> = await this.api.post('/dj-rest-auth/ibercivis/', code);
+    this.setTokens(response.data);
+    return response.data;
   }
+
+  // There is no register() here, deliberately: no account is created from this
+  // app any more. POST /dj-rest-auth/registration/ stays open for the Flutter
+  // client, which calls it itself. LOCAL-DEV.md has the reasoning.
 
   async logout(): Promise<void> {
     try {

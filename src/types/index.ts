@@ -7,6 +7,8 @@ export interface User {
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
+  /** The Ibercivis account this user signs in with, or null for a password account. */
+  ibercivis_account_id: string | null;
 }
 
 export interface DeviceModel {

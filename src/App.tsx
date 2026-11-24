@@ -9,7 +9,7 @@ import Navbar from './components/Navbar';
 import HomePage from './pages/HomePage';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
-import RegisterPage from './pages/RegisterPage';
+import IbercivisAccountCallbackPage from './pages/IbercivisAccountCallbackPage';
 import EmailVerificationPage from './pages/EmailVerificationPage';
 import VerifyEmailPage from './pages/VerifyEmailPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -23,6 +23,7 @@ import TermsOfServicePage from './pages/TermsOfServicePage';
 import MobileAppPage from './pages/MobileAppPage';
 import Esp32Page from './pages/Esp32Page';
 import theme from './theme/theme';
+import { IBERCIVIS_ACCOUNT_CALLBACK_PATH } from './services/ibercivisAccount';
 
 // Estilos globales
 const globalStyles = {
@@ -102,13 +103,15 @@ function App() {
                     </GuestRoute>
                   } 
                 />
-                <Route 
-                  path="/register" 
-                  element={
-                    <GuestRoute>
-                      <RegisterPage />
-                    </GuestRoute>
-                  } 
+                {/* No account is created here any more: a newcomer signs in with
+                    an Ibercivis account. Old links and mails still point here. */}
+                <Route
+                  path="/register"
+                  element={<Navigate to="/login" replace />}
+                />
+                <Route
+                  path={IBERCIVIS_ACCOUNT_CALLBACK_PATH}
+                  element={<IbercivisAccountCallbackPage />}
                 />
                 <Route 
                   path="/email-verification" 
