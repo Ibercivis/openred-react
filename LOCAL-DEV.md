@@ -124,11 +124,54 @@ Fixed on the API side: `compose.yaml` there sets `ENABLE_SESSION_AUTH=False`, so
 is ignored and token auth is the only path. Nothing is needed here, and no cookie-clearing ritual.
 If you ever see that error again, you are pointing at an API that does not have that setting.
 
+## Signing in with an Ibercivis account
+
+The Ibercivis citizen science sites share one sign-in service, reached over OpenID Connect; why,
+and the service itself, live in
+[`Ibercivis/citsci-federation`](https://github.com/Ibercivis/citsci-federation). Here it is a
+second way in on `/login`, next to the email and password, and it is off unless both of these are
+set:
+
+| Variable | |
+|---|---|
+| `REACT_APP_IBERCIVIS_ACCOUNT_ISSUER` | The service's address. The browser reads its `/.well-known/openid-configuration` from it. |
+| `REACT_APP_IBERCIVIS_ACCOUNT_CLIENT_ID` | This app's client at the service. |
+
+**No secret, and there could not be one.** This app starts the flow and receives an authorization
+code at `/auth/ibercivis/callback`; the API redeems that code against the secret it holds. Nothing
+this bundle carries can mint a session, which is why the client id is safe to ship in it and the
+secret is not here. `src/services/ibercivisAccount.ts` is the browser's half: PKCE S256, a `state`
+this browser keeps, and the checks on the way back. The protocol work is
+[`oauth4webapi`](https://github.com/panva/oauth4webapi)'s, the one dependency this adds.
+
+`npm run build` prints one warning because of it — *Failed to parse source map from
+`node_modules/oauth4webapi/src/index.ts`*. That package publishes a source map pointing at
+TypeScript it does not ship, and `react-scripts` reads source maps from `node_modules`. The build
+succeeds and the bundle is fine; there is nothing to fix here.
+
+**Creating accounts here is over.** `/login` no longer offers a sign-up form, `/register` leads to
+`/login`, and the navbar, the landing page and the confirmation screens no longer invite one. A
+newcomer signs in with an Ibercivis account, which **creates a separate OpenRed account** with none
+of the measurements of any account they already have — the paragraph under the button says so
+before anybody presses it. Where an OpenRed account already holds the address the service sends,
+the API refuses the arrival and the page says to use that account's password instead.
+
+The API's `POST /dj-rest-auth/registration/` is still open, for the Flutter client that calls it.
+This app no longer has a `register()` anywhere, which is the point: the closure is the web's, and
+`LOCAL-DEV.md` in [`Ibercivis/OpenRed`](https://github.com/Ibercivis/OpenRed) carries the rest of
+the reasoning.
+
+One consequence worth knowing. An account here that was **registered but never confirmed** holds
+its address, so the Ibercivis route is refused for it and the web no longer offers a second
+registration. Whoever is in that state needs the confirmation mail they already have, or an
+administrator.
+
 ## What works, and what cannot
 
 Verified against the seeded dataset: the statistics screens, the histogram, the H3 heatmap, tracks
 and their spectra, devices, device models, stations (including the offline one), the PDF reports, and
-sign-in.
+sign-in with an email and a password. Signing in with an Ibercivis account needs the service, so it
+is exercised in the composition in `Ibercivis/citsci-federation` rather than here.
 
 Three things do not, and none of them is caused by the dataset:
 
