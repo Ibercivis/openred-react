@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
-import { User, LoginCredentials, RegisterData } from '../types';
+import { User, LoginCredentials } from '../types';
+import { IbercivisAccountCode } from '../services/ibercivisAccount';
 import { apiService } from '../services/api';
 import i18n from '../i18n';
 
@@ -13,7 +14,7 @@ interface AuthState {
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   loginWithGoogle: (accessToken: string) => Promise<void>;
-  register: (userData: RegisterData) => Promise<void>;
+  loginWithIbercivis: (code: IbercivisAccountCode) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (user: User) => void;
   clearError: () => void;
@@ -194,49 +195,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  const register = async (userData: RegisterData): Promise<void> => {
+  const loginWithIbercivis = async (code: IbercivisAccountCode): Promise<void> => {
     try {
       dispatch({ type: 'AUTH_START' });
-      
-      // Registrar usuario
-      await apiService.register(userData);
-      
-      // Con email verification = mandatory, el usuario NO estará autenticado inmediatamente
-      // No intentar obtener datos del usuario, solo limpiar el estado de loading
-      dispatch({ type: 'AUTH_LOGOUT' }); // Esto limpia loading y mantiene al usuario sin autenticar
-      
+      await apiService.loginWithIbercivis(code);
+      const user = await apiService.getCurrentUser();
+      dispatch({ type: 'AUTH_SUCCESS', payload: user });
     } catch (error: any) {
-      let errorMessage = i18n.t('auth:register.createError');
-
-      if (error.response?.data) {
-        const errorData = error.response.data;
-        
-        // Si hay errores específicos de campo, formatearlos
-        if (typeof errorData === 'object' && !errorData.detail) {
-          const fieldErrors: string[] = [];
-          
-          Object.keys(errorData).forEach(field => {
-            const fieldError = errorData[field];
-            if (Array.isArray(fieldError)) {
-              fieldErrors.push(`${field}: ${fieldError.join(', ')}`);
-            } else if (typeof fieldError === 'string') {
-              fieldErrors.push(`${field}: ${fieldError}`);
-            }
-          });
-          
-          if (fieldErrors.length > 0) {
-            errorMessage = fieldErrors.join('\n');
-          }
-        } else if (errorData.detail) {
-          errorMessage = errorData.detail;
-        } else if (errorData.message) {
-          errorMessage = errorData.message;
-        } else if (typeof errorData === 'string') {
-          errorMessage = errorData;
-        }
-      }
-      
-      dispatch({ type: 'AUTH_FAILURE', payload: errorMessage });
+      // The one refusal that is not a failure: an account here already holds
+      // the address, so no second account was created. The API says so under
+      // `email`, whatever language its message is in.
+      const addressInUse = error.response?.status === 400 && Boolean(error.response?.data?.email);
+      dispatch({
+        type: 'AUTH_FAILURE',
+        payload: addressInUse
+          ? i18n.t('auth:ibercivis.emailInUse')
+          : i18n.t('auth:ibercivis.failed'),
+      });
       throw error;
     }
   };
@@ -263,7 +238,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     ...state,
     login,
     loginWithGoogle,
-    register,
+    loginWithIbercivis,
     logout,
     updateUser,
     clearError,

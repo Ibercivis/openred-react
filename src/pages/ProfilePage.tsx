@@ -225,6 +225,18 @@ const ProfilePage: React.FC = () => {
             {/* Cuenta / sesión */}
             <Box sx={{ mt: 5 }}>
               <SectionHead>{t('profile:account.sectionTitle')}</SectionHead>
+              {user.ibercivis_account_id && (
+                <Box sx={{ py: 1, borderBottom: `1px dashed ${T.hairline}` }}>
+                  <Typography sx={{ fontSize: 13, color: T.textMid }}>
+                    {t('profile:account.ibercivisAccountLabel')}
+                  </Typography>
+                  <Typography
+                    sx={{ fontFamily: MONO, fontSize: 11, color: T.text, mt: 0.25, wordBreak: 'break-all' }}
+                  >
+                    {user.ibercivis_account_id}
+                  </Typography>
+                </Box>
+              )}
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 1 }}>
                 <Typography sx={{ fontSize: 13, color: T.textMid }}>{t('profile:account.logoutLabel')}</Typography>
                 <Button variant="outlined" size="small" onClick={handleLogout} sx={{ fontFamily: MONO, fontSize: 12 }}>

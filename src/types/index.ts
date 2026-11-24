@@ -7,6 +7,8 @@ export interface User {
   is_active: boolean;
   is_staff: boolean;
   is_superuser: boolean;
+  /** The Ibercivis account this user signs in with, or null for a password account. */
+  ibercivis_account_id: string | null;
 }
 
 export interface DeviceModel {
@@ -441,14 +443,6 @@ export interface AuthTokens {
 export interface LoginCredentials {
   email: string;
   password: string;
-}
-
-export interface RegisterData {
-  email: string;
-  password1: string;
-  password2: string;
-  first_name?: string;
-  last_name?: string;
 }
 
 export interface ApiResponse<T> {

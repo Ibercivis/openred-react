@@ -108,16 +108,3 @@ export const AuthDivider: React.FC<{ children: React.ReactNode }> = ({ children 
     <Box sx={{ flex: 1, borderTop: `1px solid ${T.border}` }} />
   </Box>
 );
-
-export const TermsNotice: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <Typography
-    sx={{
-      fontSize: 11,
-      lineHeight: 1.5,
-      color: T.textDim,
-      '& a': { color: T.accent, textDecoration: 'none', '&:hover': { textDecoration: 'underline' } },
-    }}
-  >
-    {children}
-  </Typography>
-);

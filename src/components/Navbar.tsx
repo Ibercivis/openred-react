@@ -261,11 +261,8 @@ const Navbar: React.FC = () => {
             </>
           ) : (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Button onClick={() => navigate('/login')} sx={{ fontSize: 13, color: T.textMid }}>
+              <Button variant="outlined" onClick={() => navigate('/login')} sx={{ fontSize: 13 }}>
                 {t('nav.login')}
-              </Button>
-              <Button variant="outlined" onClick={() => navigate('/register')} sx={{ fontSize: 13 }}>
-                {t('nav.register')}
               </Button>
             </Box>
           )}
